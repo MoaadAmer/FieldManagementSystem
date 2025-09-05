@@ -2,7 +2,7 @@
 using Microsoft.Data.SqlClient;
 using System.Data;
 
-namespace FieldManagementSystemAPI.Repositories
+namespace FieldManagementSystemAPI.Repositories.Users
 {
     public class UserRepository : IUserRepository
     {

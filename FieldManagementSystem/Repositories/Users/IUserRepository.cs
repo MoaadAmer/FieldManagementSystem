@@ -1,6 +1,6 @@
 ﻿using FieldManagementSystemAPI.Entites;
 
-namespace FieldManagementSystemAPI.Repositories
+namespace FieldManagementSystemAPI.Repositories.Users
 {
     public interface IUserRepository
     {
