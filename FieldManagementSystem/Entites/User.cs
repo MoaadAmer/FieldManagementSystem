@@ -1,4 +1,4 @@
-﻿namespace FieldManagementSystem.Entites
+﻿namespace FieldManagementSystemAPI.Entites
 {
     public class User
     {
