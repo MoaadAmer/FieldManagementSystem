@@ -1,8 +1,8 @@
-﻿using FieldManagementSystem.Entites;
+﻿using FieldManagementSystemAPI.Entites;
 using Microsoft.Data.SqlClient;
 using System.Data;
 
-namespace FieldManagementSystem.Data
+namespace FieldManagementSystemAPI.Repositories
 {
     public class UserRepository : IUserRepository
     {
