@@ -5,7 +5,7 @@
 The Field Management System is an ASP.NET Core Web API backend. It provides role-based access and CRUD operations for managing agricultural fields, users, and controllers. The system uses ADO.NET with stored procedures for database interactions.
 
 ## Roles
-- **Admin**: Manages users and roles.
+- **Admin**: Manages users.
 - **Farmer**: Manages fields and controllers.
 - **Agronomist**: View only fields and controllers data.
 
