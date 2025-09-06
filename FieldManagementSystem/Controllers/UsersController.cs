@@ -1,10 +1,10 @@
 using FieldManagementSystemAPI.Entites;
-using FieldManagementSystemAPI.Models;
+using FieldManagementSystemAPI.Models.Users;
 using FieldManagementSystemAPI.Repositories.Roles;
 using FieldManagementSystemAPI.Repositories.Users;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FieldManagementSystem.Controllers
+namespace FieldManagementSystemAPI.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
@@ -47,11 +47,11 @@ namespace FieldManagementSystem.Controllers
         public async Task<IActionResult> GetById(int id)
         {
             User? user = await _userRepository.GetById(id);
-            if (user != null)
+            if (user == null)
             {
-                return Ok(user);
+                return NotFound();
             }
-            return NotFound();
+            return Ok(user);
         }
 
         [HttpGet("email/{email}")]
