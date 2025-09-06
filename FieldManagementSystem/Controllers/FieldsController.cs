@@ -2,10 +2,12 @@
 using FieldManagementSystemAPI.Models.Fields;
 using FieldManagementSystemAPI.Repositories.Fields;
 using FieldManagementSystemAPI.Repositories.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FieldManagementSystemAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class FieldsController : ControllerBase

@@ -2,10 +2,12 @@ using FieldManagementSystemAPI.Entites;
 using FieldManagementSystemAPI.Models.Users;
 using FieldManagementSystemAPI.Repositories.Roles;
 using FieldManagementSystemAPI.Repositories.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FieldManagementSystemAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
