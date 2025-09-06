@@ -4,6 +4,7 @@ using FieldManagementSystemAPI.Repositories.Fields;
 using FieldManagementSystemAPI.Repositories.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace FieldManagementSystemAPI.Controllers
 {
@@ -21,7 +22,7 @@ namespace FieldManagementSystemAPI.Controllers
             _userRepository = userRepository;
             _fieldRepository = fieldRepository;
         }
-
+        [Authorize(Roles = "Farmer")]
         [HttpPost]
         public async Task<IActionResult> Add(AddFieldDTO field)
         {
@@ -29,6 +30,7 @@ namespace FieldManagementSystemAPI.Controllers
             {
                 return BadRequest("Invalid UserId");
             }
+
             var newField = new Field() { Name = field.Name, Location = field.Location, UserId = field.UserId };
             await _fieldRepository.Add(newField);
             return CreatedAtAction(nameof(GetById), new { Id = newField.Id }, newField);
@@ -55,27 +57,47 @@ namespace FieldManagementSystemAPI.Controllers
             return Ok(await _fieldRepository.GetByUserId(userId));
         }
 
+        [Authorize(Roles = "Farmer")]
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateFieldDTO field)
         {
-            if (await _fieldRepository.GetById(id) == null)
+            if (!await UserOwnsField(id))
             {
-                return NotFound();
+                return Forbid("You do not own this field.");
             }
             var newField = new Field() { Name = field.Name, Location = field.Location };
             await _fieldRepository.Update(id, newField);
             return NoContent();
         }
+
+        [Authorize(Roles = "Farmer")]
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            Field? field = await _fieldRepository.GetById(id);
-            if (field == null)
+            if (!await UserOwnsField(id))
             {
-                return NotFound();
+                return Forbid("You do not own this field.");
             }
             await _fieldRepository.Delete(id);
             return NoContent();
         }
+
+
+        private int GetCurrentUserId()
+        {
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+            return userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
+        }
+
+        private async Task<bool> UserOwnsField(int fieldId)
+        {
+            Field? field = await _fieldRepository.GetById(fieldId);
+            if (field == null) return false;
+
+            int currentUserId = GetCurrentUserId();
+            return field.UserId == currentUserId;
+        }
+
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using FieldManagementSystemAPI.Entites;
+using FieldManagementSystemAPI.Repositories.Roles;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -9,19 +10,25 @@ namespace FieldManagementSystemAPI.Services
     public class JwtService : IJwtService
     {
         private readonly IConfiguration _config;
+        private readonly IRoleRepository _roleRepository;
 
-        public JwtService(IConfiguration configuration)
+        public JwtService(IConfiguration configuration,IRoleRepository roleRepository)
         {
             _config = configuration;
+            _roleRepository = roleRepository;
         }
-        public string GenerateToken(User user)
+        public async Task<string> GenerateToken(User user)
         {
+            // Get role name from RoleRepository
+            Role? role = await _roleRepository.GetById(user.RoleId);
+            string roleName = role?.Name ?? "Unknown";
+
             var claims = new[]
             {
-            new Claim("UserId", user.Id.ToString()),
-            new Claim("RoleId", user.RoleId.ToString()),
-            new Claim(ClaimTypes.Email, user.Email)
-        };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+        new Claim(ClaimTypes.Email, user.Email),                  
+        new Claim(ClaimTypes.Role, roleName)                      
+    };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -35,6 +42,7 @@ namespace FieldManagementSystemAPI.Services
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
 
     }
 }

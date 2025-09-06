@@ -28,7 +28,7 @@ namespace FieldManagementSystemAPI.Controllers
                 return Unauthorized();
             }
 
-            var token = _jwtService.GenerateToken(user);
+            var token = await _jwtService.GenerateToken(user);
             return Ok(token);
         }
     }
