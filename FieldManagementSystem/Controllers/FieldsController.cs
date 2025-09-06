@@ -21,7 +21,7 @@ namespace FieldManagementSystemAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<Field>> Add(AddFieldDTO field)
+        public async Task<IActionResult> Add(AddFieldDTO field)
         {
             if (await _userRepository.GetById(field.UserId) == null)
             {
@@ -33,7 +33,7 @@ namespace FieldManagementSystemAPI.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<Field>> GetById(int id)
         {
             Field? field = await _fieldRepository.GetById(id);
             if (field == null)
@@ -46,11 +46,15 @@ namespace FieldManagementSystemAPI.Controllers
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Field>>> GetByUserId(int userId)
         {
+            if (await _userRepository.GetById(userId) == null)
+            {
+                return NotFound();
+            }
             return Ok(await _fieldRepository.GetByUserId(userId));
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<IEnumerable<Field>>> Update(int id, UpdateFieldDTO field)
+        public async Task<IActionResult> Update(int id, UpdateFieldDTO field)
         {
             if (await _fieldRepository.GetById(id) == null)
             {
@@ -61,7 +65,7 @@ namespace FieldManagementSystemAPI.Controllers
             return NoContent();
         }
         [HttpDelete("{id}")]
-        public async Task<ActionResult<IEnumerable<Field>>> Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             Field? field = await _fieldRepository.GetById(id);
             if (field == null)
