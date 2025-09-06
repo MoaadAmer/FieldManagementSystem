@@ -1,4 +1,4 @@
-﻿namespace FieldManagementSystemAPI.Models
+﻿namespace FieldManagementSystemAPI.Models.Users
 {
     public class AddUserDTO
     {
