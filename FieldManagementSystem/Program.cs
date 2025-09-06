@@ -1,3 +1,4 @@
+using FieldManagementSystemAPI.Repositories.Fields;
 using FieldManagementSystemAPI.Repositories.Roles;
 using FieldManagementSystemAPI.Repositories.Users;
 
@@ -8,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IRoleRepository, RoleRepositroy>();
+builder.Services.AddScoped<IFieldRepository, FieldRepository>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
