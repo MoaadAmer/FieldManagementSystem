@@ -26,9 +26,9 @@ namespace FieldManagementSystemAPI.Controllers
         [HttpPost]
         public async Task<IActionResult> Add(AddFieldDTO field)
         {
-            if (await _userRepository.GetById(field.UserId) == null)
+            if (GetCurrentUserId() != field.UserId)
             {
-                return BadRequest("Invalid UserId");
+                return Forbid();
             }
 
             var newField = new Field() { Name = field.Name, Location = field.Location, UserId = field.UserId };
@@ -63,7 +63,7 @@ namespace FieldManagementSystemAPI.Controllers
         {
             if (!await UserOwnsField(id))
             {
-                return Forbid("You do not own this field.");
+                return Forbid();
             }
             var newField = new Field() { Name = field.Name, Location = field.Location };
             await _fieldRepository.Update(id, newField);
@@ -76,7 +76,7 @@ namespace FieldManagementSystemAPI.Controllers
         {
             if (!await UserOwnsField(id))
             {
-                return Forbid("You do not own this field.");
+                return Forbid();
             }
             await _fieldRepository.Delete(id);
             return NoContent();
@@ -86,7 +86,7 @@ namespace FieldManagementSystemAPI.Controllers
         private int GetCurrentUserId()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            return userIdClaim != null ? int.Parse(userIdClaim.Value) : 0;
+            return userIdClaim != null ? int.Parse(userIdClaim.Value) : throw new Exception("Invalid Claim. no NameIdentifier");
         }
 
         private async Task<bool> UserOwnsField(int fieldId)

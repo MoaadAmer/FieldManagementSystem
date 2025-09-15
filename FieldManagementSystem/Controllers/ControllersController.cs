@@ -29,7 +29,7 @@ namespace FieldManagementSystemAPI.Controllers
         {
             if (!await UserOwnsField(controller.FieldId))
             {
-                return Forbid("You do not own the field.");
+                return Forbid();
             }
             var newController = new Controller() { Type = controller.Type, FieldId = controller.FieldId };
             await _controllerRepository.Add(newController);
@@ -68,7 +68,7 @@ namespace FieldManagementSystemAPI.Controllers
 
             if (!await UserOwnsField(controller.FieldId))
             {
-                return Forbid("You do not own the field this controller belongs to.");
+                return Forbid();
             }
             await _controllerRepository.Delete(id);
             return NoContent();
