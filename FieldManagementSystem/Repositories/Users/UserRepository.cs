@@ -17,6 +17,7 @@ namespace FieldManagementSystemAPI.Repositories.Users
             using SqlCommand cmd = new("AddUser", conn);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@Email", user.Email);
+            cmd.Parameters.AddWithValue("@HashedPassword", user.HashedPassword);
             cmd.Parameters.AddWithValue("@RoleId", user.RoleId);
             await conn.OpenAsync();
             using SqlDataReader reader = await cmd.ExecuteReaderAsync();
@@ -40,7 +41,8 @@ namespace FieldManagementSystemAPI.Repositories.Users
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    RoleId = reader.GetInt32(2)
+                    HashedPassword= reader.GetString(2),
+                    RoleId = reader.GetInt32(3)
                 };
             }
             return user;
@@ -60,7 +62,8 @@ namespace FieldManagementSystemAPI.Repositories.Users
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    RoleId = reader.GetInt32(2)
+                    HashedPassword = reader.GetString(2),
+                    RoleId = reader.GetInt32(3)
                 };
             }
             return user;
@@ -79,7 +82,8 @@ namespace FieldManagementSystemAPI.Repositories.Users
                 {
                     Id = reader.GetInt32(0),
                     Email = reader.GetString(1),
-                    RoleId = reader.GetInt32(2)
+                    HashedPassword = reader.GetString(2),
+                    RoleId = reader.GetInt32(3)
                 });
             }
             return users;
@@ -91,6 +95,7 @@ namespace FieldManagementSystemAPI.Repositories.Users
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@UserId", id);
             cmd.Parameters.AddWithValue("@Email", user.Email);
+            cmd.Parameters.AddWithValue("@HashedPassword", user.HashedPassword);
             await conn.OpenAsync();
             await cmd.ExecuteNonQueryAsync();
         }

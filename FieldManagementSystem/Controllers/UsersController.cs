@@ -3,29 +3,32 @@ using FieldManagementSystemAPI.Models.Users;
 using FieldManagementSystemAPI.Repositories.Roles;
 using FieldManagementSystemAPI.Repositories.Users;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FieldManagementSystemAPI.Controllers
 {
-    [Authorize(Roles="Admin")]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class UsersController : ControllerBase
     {
         private readonly ILogger<UsersController> _logger;
         private readonly IUserRepository _userRepository;
+        private readonly IPasswordHasher<User> _passwordHasher;
         private readonly IRoleRepository _roleRepository;
 
         public UsersController(ILogger<UsersController> logger, IUserRepository repository
-            , IRoleRepository roleRepository)
+            , IPasswordHasher<User> passwordHasher, IRoleRepository roleRepository)
         {
             _logger = logger;
             _userRepository = repository;
+            _passwordHasher = passwordHasher;
             _roleRepository = roleRepository;
         }
 
         [HttpPost]
-        public async Task<ActionResult<User>> Add(AddUserDTO addUserDto)
+        public async Task<ActionResult<GetUserDTO>> Add(AddUserDTO addUserDto)
         {
             if (await _roleRepository.GetById(addUserDto.RoleId) == null)
             {
@@ -35,50 +38,85 @@ namespace FieldManagementSystemAPI.Controllers
             {
                 return BadRequest("user with this email already exists");
             }
-            var newUser = new User() { Email = addUserDto.Email, RoleId = addUserDto.RoleId };
+            var newUser = new User()
+            {
+                Email = addUserDto.Email,
+                RoleId = addUserDto.RoleId
+            };
+            newUser.HashedPassword = _passwordHasher.HashPassword(newUser, addUserDto.Password);
             await _userRepository.Add(newUser);
-            return CreatedAtAction(nameof(GetById), new { Id = newUser.Id }, newUser);
+
+            var userResult = new GetUserDTO()
+            {
+                Id = newUser.Id,
+                Email = newUser.Email,
+                RoleId = newUser.RoleId,
+            };
+            return CreatedAtAction(nameof(GetById), new { Id = userResult.Id }, userResult);
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetAll()
+        public async Task<ActionResult<IEnumerable<GetUserDTO>>> GetAll()
         {
-            return Ok(await _userRepository.GetAll());
+            IEnumerable<User> users = await _userRepository.GetAll();
+            return Ok(
+                users.Select(
+                    user => new GetUserDTO()
+                    {
+                        Id = user.Id,
+                        Email = user.Email,
+                        RoleId = user.RoleId,
+                    }
+                    )
+                );
         }
         [HttpGet("id/{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<GetUserDTO>> GetById(int id)
         {
             User? user = await _userRepository.GetById(id);
             if (user == null)
             {
                 return NotFound();
             }
-            return Ok(user);
+            return Ok(new GetUserDTO()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                RoleId = user.RoleId,
+            });
         }
 
         [HttpGet("email/{email}")]
-        public async Task<IActionResult> GetByEmail(string email)
+        public async Task<ActionResult<GetUserDTO>> GetByEmail(string email)
         {
             User? user = await _userRepository.GetByEmail(email);
             if (user == null)
             {
                 return NotFound();
             }
-            return Ok(user);
+            return Ok(new GetUserDTO()
+            {
+                Id = user.Id,
+                Email = user.Email,
+                RoleId = user.RoleId,
+            });
         }
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, UpdateUserDTO UpdateUserDto)
         {
-            if (await _userRepository.GetById(id) == null)
+            User userById = await _userRepository.GetById(id);
+            if (userById == null)
             {
                 return NotFound();
             }
-            if (await _userRepository.GetByEmail(UpdateUserDto.Email) != null)
+            User userByEmail = await _userRepository.GetByEmail(UpdateUserDto.Email);
+            if (userByEmail != null && userById.Email != userByEmail.Email)
             {
                 return BadRequest("User with this email already exists");
             }
-            var updateUser = new User() { Email = UpdateUserDto.Email };
-            await _userRepository.Update(id, updateUser);
+            var newUser = new User() { Email = UpdateUserDto.Email };
+            newUser.HashedPassword = _passwordHasher.HashPassword(newUser, UpdateUserDto.Password);
+            await _userRepository.Update(id, newUser);
             return NoContent();
         }
         [HttpDelete("{id}")]
