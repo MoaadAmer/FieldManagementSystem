@@ -12,7 +12,7 @@ namespace FieldManagementSystemAPI.Services
         private readonly IConfiguration _config;
         private readonly IRoleRepository _roleRepository;
 
-        public JwtService(IConfiguration configuration,IRoleRepository roleRepository)
+        public JwtService(IConfiguration configuration, IRoleRepository roleRepository)
         {
             _config = configuration;
             _roleRepository = roleRepository;
@@ -21,14 +21,16 @@ namespace FieldManagementSystemAPI.Services
         {
             // Get role name from RoleRepository
             Role? role = await _roleRepository.GetById(user.RoleId);
-            string roleName = role?.Name ?? "Unknown";
+            if (role == null)
+            {
+                throw new ArgumentException($"Invalid role ID '{user.RoleId}' for user ID '{user.Id}'");
+            }
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), 
-        new Claim(ClaimTypes.Email, user.Email),                  
-        new Claim(ClaimTypes.Role, roleName)                      
-    };
+            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.Role, role.Name)
+            };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
@@ -37,7 +39,7 @@ namespace FieldManagementSystemAPI.Services
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(Convert.ToDouble(_config["Jwt:ExpireMinutes"])),
+                expires: DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["Jwt:ExpireMinutes"])),
                 signingCredentials: creds);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
